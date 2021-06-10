@@ -17,7 +17,7 @@ At a high level the following should be supported:
 # Design Proposal
 The design is intended to have a generic approach for vxlan src feature. 
 A user can set an attribute "vxlan_sport" and "vxlan_mask" to AppDB via swssconfig. The default values if not specified would be "0"
-swssconfig /etc/swss/config.d
+```swssconfig /etc/swss/config.d```
 
 ```
 switch.json:
@@ -44,14 +44,15 @@ switch.json:
 
 key             = INTERFACE:name        ; Same as existing
 ; field
-vxlan_sport     = vxlan sport    		; Default "0" 
+vxlan_sport     = vxlan sport    	; Default "0" 
 vxlan_mask      = vxlan sport mask  	; Default "0"
 ```
-Updating data in SWITCH_TABLE will trigger switchorch (orcagent). It will handle new value and execute 
-sai_switch_api->set_switch_tunnel_attribute(gSwitchId, &attr) function, where:
+Updating data in SWITCH_TABLE will trigger switchorch (orcagent). It will handle new value and execute: 
+```set_switch_tunnel_attribute(gSwitchId, &attr)``` function, where:
 - gSwitchId - pointer to chip
 - attr.id = ```SAI_SWITCH_TUNNEL_ATTR_VXLAN_UDP_SPORT```/```SAI_SWITCH_TUNNEL_ATTR_VXLAN_UDP_SPORT_MASK```
 - attr.val = new value from swssconfig
 
 
 # Flows
+![](https://github.com/Azure/SONiC/blob/master/images/vxlan_hld/vnet_vxlan_src_port_range_flow.png)
