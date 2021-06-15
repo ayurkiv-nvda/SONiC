@@ -15,16 +15,16 @@ At a high level the following should be supported:
 	0 means a fixed value  
 
 # Design Proposal
-The design is intended to have a generic approach for vxlan src feature. 
+This document is intended to describe details about adding support of VxLAN source port configuration to SONiC. 
 A user can set an attribute "vxlan_sport" and "vxlan_mask" to AppDB via swssconfig. The default values if not specified would be "0"
-```swssconfig /etc/swss/config.d```
+```swssconfig /etc/swss/config.d``` 
 
 ```
 switch.json:
 [
     {
         "SWITCH_TABLE:switch": {
-			"vxlan_sport": "0xFFA0"
+			"vxlan_sport": "0xFFA0",
 			"vxlan_mask": "3"
         },
         "OP": "SET"
@@ -34,7 +34,7 @@ switch.json:
 
 ```
 "SWITCH_TABLE:switch": {
-	"vxlan_sport": {{vxlan_sport}}
+	"vxlan_sport": {{vxlan_sport}},
 	"vxlan_mask": {{vxlan_mask}}
 },
 ```
@@ -49,10 +49,12 @@ vxlan_mask      = vxlan sport mask  	; Default "0"
 ```
 Updating data in SWITCH_TABLE will trigger switchorch (orcagent). It will handle new value and execute: 
 ```set_switch_tunnel_attribute(gSwitchId, &attr)``` function, where:
-- gSwitchId - pointer to chip
-- attr.id = ```SAI_SWITCH_TUNNEL_ATTR_VXLAN_UDP_SPORT```/```SAI_SWITCH_TUNNEL_ATTR_VXLAN_UDP_SPORT_MASK```
-- attr.val = new value from swssconfig
+- gSwitchId - pointer to the SAI switch OID
+- attr.id = we need to set 2 attributes with following id: ```SAI_SWITCH_TUNNEL_ATTR_VXLAN_UDP_SPORT``` and ```SAI_SWITCH_TUNNEL_ATTR_VXLAN_UDP_SPORT_MASK```.
+But they will be valid only if two other attributes are set: ```SAI_TUNNEL_ATTR_VXLAN_UDP_SPORT_MODE == SAI_TUNNEL_VXLAN_UDP_SPORT_MODE_USER_DEFINED```
+and ```SAI_TUNNEL_ATTR_TYPE == SAI_TUNNEL_TYPE_VXLAN```
+- attr.val = new value from swssconfig : UDP src port (for ```SAI_SWITCH_TUNNEL_ATTR_VXLAN_UDP_SPORT```) or mask that defines the number of bits (for ```SAI_SWITCH_TUNNEL_ATTR_VXLAN_UDP_SPORT_MASK```)
 
 
 # Flows
-![](https://github.com/Azure/SONiC/blob/master/images/vxlan_hld/vnet_vxlan_src_port_range_flow.png)
+![](https://github.com/ayurkiv-nvda/SONiC/blob/ayurkiv-design-ver-1/images/vxlan_hld/vnet_vxlan_src_port_range_flow.png)
