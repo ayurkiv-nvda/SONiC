@@ -16,8 +16,10 @@ At a high level the following should be supported:
 
 # Design Proposal
 This document is intended to describe details about adding support of VxLAN source port configuration to SONiC. 
-A user can set an attribute "vxlan_sport" and "vxlan_mask" to AppDB via swssconfig. The default values if not specified would be "0"
-```swssconfig /etc/swss/config.d``` 
+A user can set an attribute "vxlan_sport" and "vxlan_mask" to AppDB via swssconfig. The default values if not specified would be "0".
+
+swssconfig - is application in swss docker which loads db settings from json file.
+Example: ```swssconfig /etc/swss/config.d/switch.json``` 
 
 ```
 switch.json:
