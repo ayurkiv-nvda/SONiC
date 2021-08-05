@@ -85,7 +85,7 @@ Please refer to the test case for detailed description.
 | 19 | DST IP address is link-local | IP|
 | 20 | ACL SRC IP DROP| IP|
 | 21 | No drops when ERIF interface disabled | IP|
-| 22 | Buffers are overflowed | IP|
+| 22 | Ingress Priority Group drop | IP|
 
 #### Related DUT CLI commands
 | **Command**                                                      | **Comment** |
@@ -97,6 +97,7 @@ Please refer to the test case for detailed description.
 | aclshow -a                            | Check ```PACKETS COUNT```              |
 | sonic-clear counters                  | Clear counters                         |
 | sonic-clear rifcounters               | Clear RIF counters                     |
+| show priority-group drop counters     | Show PG dropped pakets                 |
 
 As different vendors can have diferent drop counters calculation, for example L2 and L3 drop counters can be combined and L2 drop counter will be increased for all ingress discards.
 So for valid drop counters verification there is a need to distinguish wheter drop counters are combined or not for current vendor.
@@ -999,27 +1000,33 @@ Packet1 to send
 
 #### Test case #22
 ##### Test objective
-Verify ingress Priority group drop packets counter
+Verify ingress Priority Group drop packets counter
 
-Packet1 to send
+Packet to send
 ```
 ...
 ###[ IP ]###
   version= 4
-  ihl= None
-  tos= 0x11   (4 << 2) | 1
-  src= [auto]
-  dst= [auto]
+  tos= [(lossless_priority << 2) | ECN]
+  src= [neighbor1 ip src]
+  dst= [neighbor2 ip dst]
 ...
 ```
 
-##### Get interfaces which are members of LAG and RIF. Choose 2 random interfaces (neighbors are linked to them are host A and B)
+##### Test description
+Supportted topology for this testcase - ptf32.
+Get interfaces which are members of LAG and RIF. Choose 2 random interfaces (neighbors are linked to them are host A and B).
+To make packet dropped on ingress side, we need to:
+-	create congestion on egress side by closing port by setting the shaper, which can be done in RPC image only.
+-	send enough packet to occupy the shared buffer pool
+-	send enough packet to occupy the headroom
+-	send extra packet to trigger packet drop
+
 
 ##### Test steps
-- update the buffer profile on the DUT's ports, set "dynamic_th" to -8 :
-redis-cli -n 4 hset "BUFFER_PROFILE|pg_lossless_<speed>_5m_profile" dynamic_th -8
-- config save & config reload
-- Start PFC storm on one of the ports (host A)
-- create Packet1 to send on PTF with DSCP mark 3 or 4
-- send numerous of these packets from host B to A
-- observe PG drop counters increasing
+- limit maximum bandwith rate on the destination port with using SAI port attribute SAI_PORT_ATTR_QOS_SCHEDULER_PROFILE_ID
+- choose losless Priority Queue an get appropriate DSCP value
+- consruct IP packet
+- start data traffic from RX to TX ports
+- verify there are drops on apropriate PG on apropriate port
+- cleanup (resore maximin bandwith)
