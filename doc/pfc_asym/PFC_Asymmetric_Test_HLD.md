@@ -19,7 +19,8 @@
 * [Test cases](#Test-cases)
 
 ## Overview
-The purpose is to test functionality of Asymmetric PFC on the SONIC based DUT, closely resembling production environment.
+The purpose is to test functionality of Asymmetric PFC on the SONIC based DUT, closely resembling production environment and
+check dropped packets counter per priority group.
 
 ### Scope
 The test is targeting a running SONIC system with fully functioning configuration. The purpose of the test is to perform functional testing of Asymmetric PFC on SONIC system. There will be reused existed PTF test suite for PFC Asymmetric which is located at https://github.com/Azure/sonic-mgmt/blob/master/ansible/roles/test/files/saitests/pfc_asym.py.
@@ -428,3 +429,27 @@ setup, pfc_storm_runner, enable_pfc_asym
 
 - Teardown:
   - Stop ARP responder
+
+### Test case # 5 - Priority Group dropped packets testing
+#### Test objective
+Asymmetric PFC is disabled. Verify ingress Priority Group drop packets counter increasing
+
+#### Used fixtures
+setup, pfc_storm_runner
+
+#### Test steps
+- Setup:
+  - Start ARP responder
+  - Limit maximum bandwith rate on the destination port by setting "1" into SAI port attribute SAI_PORT_ATTR_QOS_SCHEDULER_PROFILE_ID
+
+- Start PFC storm (via pfc_storm_runner)
+- Clear all counters for all ports
+- Get lossless priorities
+- Get server ports info
+- Get non server port info (Portchannel peers)
+- Send packets for lossless priorities from all server ports (src) to non-server port (dst)
+- Execute 'show priority-group drop counters' and verify there are packet drops on appropriate PG and appropriate port
+
+- Teardown:
+  - Restore maximum bandwith rate on the destination port by setting "0" into SAI port attribute SAI_PORT_ATTR_QOS_SCHEDULER_PROFILE_ID
+   - Stop ARP responder
