@@ -85,7 +85,7 @@ Please refer to the test case for detailed description.
 | 19 | DST IP address is link-local | IP|
 | 20 | ACL SRC IP DROP| IP|
 | 21 | No drops when ERIF interface disabled | IP|
-| 22 | Ingress Priority Group drop | IP|
+| 22 | Ingress Priority Group drop | PG|
 
 #### Related DUT CLI commands
 | **Command**                                                      | **Comment** |
@@ -1014,7 +1014,7 @@ Packet to send
 ```
 
 ##### Test description
-Supportted topology for this testcase - ptf32.
+It is required to have RPC image for this test.
 Get interfaces which are members of LAG and RIF. Choose 2 random interfaces (neighbors are linked to them are host A and B).
 To make packet dropped on ingress side, we need to:
 -	create congestion on egress side by closing port by setting the shaper, which can be done in RPC image only.
